@@ -1,0 +1,29 @@
+# Implemented driving rules
+
+This is a bounded driving challenge with original placeholder geometry, not a complete driving-law simulator. Sources consulted 6 September 2026: the official federal StVO text published by the Federal Ministry of Justice / Federal Office of Justice.
+
+| Evaluator | Implemented behaviour | Scope and exceptions |
+| --- | --- | --- |
+| `RuleLogic.SpeedLimitAt`, `IsSpeeding` | 50 km/h initially, 30 from front reference z=65, 50 from z=215. A confirmed excess ends the attempt. | Sign 274, [Annex 2](https://www.gesetze-im-internet.de/stvo_2013/anlage_2.html). The 0.05 km/h numerical epsilon is not a legal enforcement tolerance. No general weather/visibility-dependent safe-speed assessment. The sign state uses route position; reverse travel and opposite-direction limits are not modelled. |
+| `RuleLogic.ViolatesSignal` | Swept forward stop-line crossing with interpolated signal time. Red and red+yellow entry fail. | [§37](https://www.gesetze-im-internet.de/stvo_2013/__37.html). Green entry remains legal if the light subsequently changes. No green-arrow exception exists on this course. Yellow is displayed, but stopping-distance/yellow decisions are deliberately not assessed; this omission does not mean yellow grants permission to proceed. |
+| `EncounterRules.ViolatesYield`, `MustYieldRight` | At the unsigned z=190 junction, yield before entry z=184 when the right-hand car is approaching/in the conflict area. | [§8](https://www.gesetze-im-internet.de/stvo_2013/__8.html): right-before-left where no overriding control exists. This evaluator is used only at the unsigned junction, never the signal-controlled one. The NPC moves west at 4 m/s; x between -8 and 22 is the conservative scenario conflict envelope. Clear or distant traffic does not reserve the junction. No field/forest paths, lowered kerbs, priority signs, emergency vehicles or negotiated waivers are represented. |
+| `EncounterRules.PedestrianHasPriority` | A pedestrian at the zebra crossing visibly waits two seconds, then crosses. Entering the zebra at z=243 while intent/crossing remains active fails. | [§26](https://www.gesetze-im-internet.de/stvo_2013/__26.html): enable visibly intending pedestrians to cross; approach moderately and wait as necessary. This scenario conservatively waits for the pedestrian to clear the entire road. No separate numerical moderate-speed verdict, overtaking, queues, bicycles or trams are assessed. |
+| `EncounterRules.MissingTurnIndicator` | At the selected final turn, Q (left) or E (right) must have been on for at least one second before heading reaches 20 degrees in that direction. The turn registers after reaching 50 degrees within the junction area; finish inside the selected destination zone. | [§9](https://www.gesetze-im-internet.de/stvo_2013/BJNR036710013.html): indicate a turn clearly and in advance. One second and angle thresholds are explicit gameplay approximations, not statutory thresholds. Small corrections are ignored. A left turn also yields when an oncoming actor occupies the scenario envelope z=280..322. This conservative envelope represents possible conflict, not a statutory distance. Lane-change indication, rear observation, turning pedestrians/cyclists and complex multi-vehicle negotiations are not assessed. |
+
+All rule failures provide an explanation and a retry action. Mission departure, overturning and wrong route are separately labelled `MISSION BOUNDARY`; they are not traffic-law verdicts. NPCs are scripted physical participants. Actor contact and significant horizontal obstacle impacts end the attempt as safety failures; legal collision liability is not inferred. Detection assumes forward progression on the assigned route and does not attempt to police manoeuvres in every direction.
+
+The route is: straight through the signal at z=127; yield at the unsigned junction z=190; allow the pedestrian across at z=245; indicate and take the selected left/right turn at z=290; finish westbound at x=-55 or eastbound at x=55. Completion requires every checkpoint and the selected turn, so cutting directly to the final gate cannot win.
+
+Rule logic is pure C# in `RuleLogic.cs` and `EncounterRules.cs`. `CourseEncounters` supplies deterministic participant positions; `CourseSession` evaluates boundaries and handles results; rendering and input are separate. Neither signals nor priority crossings perform retroactive entry violations after the front has legally crossed their evaluation boundary.
+
+## Weather and background traffic
+
+Clear/rain/fog cycle at 60-second intervals, or F selects a preset. Wetness changes the wheel friction model; fog changes visibility. These effects do not themselves issue violations and do not add a legal speed allowance. The HUD tells the driver to reduce speed for conditions, but condition-dependent safe speed under §3 is not numerically assessed.
+
+Four oncoming cars travel at 5.5 m/s, maintain spacing and stop at the shared signal phase and occupied zebra. They also pause for the demonstration car at the unsigned junction. These scripted encounters are not a general autonomous traffic simulator. Six parked cars provide street detail. Physical collisions are safety failures, separate from the legal rule model.
+
+## Academy lessons and fines (7 September 2026)
+
+Four missions share this course with distinct starts, required checkpoints and finish gates. The Crossing & Stop lesson adds sign 206: stop fully behind its line before proceeding. The City Exam retains the complete route and selectable final turn. The destination is a bounded arrival zone, avoiding the previous fragile single-line left-turn completion test.
+
+Sign 282 replaces the final posted-limit sign at z=215; general urban 50 km/h remains applicable. See [German rules, signs and fines](German-rules-and-fines.md) for the official sources, implemented fine bands, reference-only signs and legal exceptions.

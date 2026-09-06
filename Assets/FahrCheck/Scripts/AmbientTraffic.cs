@@ -1,0 +1,27 @@
+using UnityEngine;
+namespace FahrCheck
+{
+    // Oncoming traffic keeps spacing, stops for the shared phase and for the zebra pedestrian.
+    public sealed class AmbientTraffic : MonoBehaviour
+    {
+        public CourseSession session;
+        public Transform[] cars;
+        public float[] positions;
+        public float SpeedMetresPerSecond = 5.5f;
+        void FixedUpdate()
+        {
+            if (!session.IsDriving) return;
+            for (int i=0;i<cars.Length;i++)
+            {
+                float z=positions[i], next=z-SpeedMetresPerSecond*Time.fixedDeltaTime;
+                bool blocked=false;
+                if (z>=145 && next<145 && RuleLogic.AspectAt(session.ElapsedSeconds)!=SignalAspect.Green) blocked=true;
+                if (z>=251 && next<251 && EncounterRules.PedestrianHasPriority(session.encounters.PedestrianXAt(session.ElapsedSeconds),session.encounters.PedestrianIntent)) blocked=true;
+                if (z>=199 && next<199 && Mathf.Abs(session.encounters.PriorityXAt(session.ElapsedSeconds))<12) blocked=true;
+                foreach(float other in positions) if (other<z && z-other<8) blocked=true;
+                if (!blocked) positions[i]=next < 0 ? 370 : next;
+                cars[i].GetComponent<Rigidbody>().MovePosition(new Vector3(-3,.2f,positions[i]));
+            }
+        }
+    }
+}
