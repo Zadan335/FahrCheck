@@ -71,6 +71,7 @@ namespace FahrCheck.Editor
 
             UpgradeVisuals(session);
             ProfessionalPass(session);
+            RealismPass(session);
             PlayerSettings.companyName = "FahrCheck";
             PlayerSettings.productName = "FahrCheck";
             PlayerSettings.defaultScreenWidth = 1440;

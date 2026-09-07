@@ -1,0 +1,5 @@
+Free Coupe Car by Alexander123
+Source: https://opengameart.org/content/3d-car-low-poly-free
+Licence: CC0 1.0, declared by uploader on source page.
+https://creativecommons.org/publicdomain/zero/1.0/
+Imported materials adapted for Unity Built-in Standard shader.

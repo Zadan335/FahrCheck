@@ -21,8 +21,8 @@ namespace FahrCheck.Editor
             check(FineCatalog.Indicator.Euros==10 && FineCatalog.Pedestrian.Euros==80,"sourced standard rates");
             check(FineCatalog.StopLine.Euros==10,"stop-line crossing not automatically full red fine");
             check(SignCatalog.All.Length>=20,"sign reference library");
-            var human=UnityEngine.Object.FindObjectOfType<PedestrianAnimator>();
-            check(human!=null && human.leftShin!=null && human.rightForearm!=null,"articulated human rig");
+            var human=UnityEngine.Object.FindObjectOfType<SkinnedPedestrianMotion>();
+            check(human!=null && human.animator!=null && human.animator.avatar!=null && human.animator.avatar.isHuman,"articulated human rig");
             check(human.GetComponent<Collider>()!=null,"pedestrian collision geometry");
             foreach(var actor in UnityEngine.Object.FindObjectsOfType<CollisionParticipant>()) check(actor.GetComponent<Collider>()!=null && actor.GetComponent<Rigidbody>()!=null,"actor has physics geometry");
             check(UnityEngine.Object.FindObjectsOfType<MissionGate>(true).Length==2,"configurable destination gates");

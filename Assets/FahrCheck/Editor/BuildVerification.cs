@@ -14,6 +14,7 @@ namespace FahrCheck.Editor
             else EditorSceneManager.OpenScene(PrototypeBuilder.ScenePath);
             PrototypeChecks.Run();
             AcademyChecks.Run();
+            RealismChecks.Run();
             Debug.Log("FAHRCHECK FOUNDATION PASSED");
         }
         public static void Upgrade() { PrototypeBuilder.CreatePrototype(); Foundation(); }
@@ -31,7 +32,7 @@ namespace FahrCheck.Editor
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.Mono2x);
             EditorUserBuildSettings.SetPlatformSettings("Standalone", "OSXUniversal", "Architecture", "x64");
             Directory.CreateDirectory(Path.Combine(Application.dataPath, "../Builds/Mac"));
-            var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions { scenes = new[] { PrototypeBuilder.ScenePath }, locationPathName = "Builds/Mac/FahrCheck-Academy.app", target = BuildTarget.StandaloneOSX, options = BuildOptions.Development });
+            var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions { scenes = new[] { PrototypeBuilder.ScenePath }, locationPathName = "Builds/Mac/FahrCheck-Realism.app", target = BuildTarget.StandaloneOSX, options = BuildOptions.Development });
             if (report.summary.result != BuildResult.Succeeded) throw new Exception("Mac build failed: " + report.summary.result);
             Debug.Log("FAHRCHECK MAC BUILD PASSED: " + report.summary.outputPath);
         }

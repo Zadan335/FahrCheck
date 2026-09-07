@@ -19,7 +19,13 @@ namespace FahrCheck
             yield return Choose(1);yield return new WaitForSeconds(10.2f);Session.car.Body.position=new Vector3(3,.4f,156);yield return new WaitForSeconds(10);
             Session.car.Body.position=new Vector3(3,.4f,211);yield return new WaitForSecondsRealtime(.2f);
             check(Session.State==SessionState.Complete,"Lesson 2 signal and priority completion");
-            yield return Choose(2);yield return new WaitForSeconds(14);Session.car.Body.position=new Vector3(3,.4f,264);yield return new WaitForSecondsRealtime(.2f);
+            yield return Choose(2);yield return new WaitForSeconds(3);
+            var human=Session.encounters.pedestrian.GetComponent<SkinnedPedestrianMotion>();
+            check(human.animator.isHuman && human.animator.GetFloat("Speed")>.1f,"Imported humanoid enters walking blend while crossing");
+            var thigh=human.animator.GetBoneTransform(HumanBodyBones.LeftUpperLeg);var pose=thigh.localRotation;
+            yield return new WaitForSeconds(.2f);
+            check(Quaternion.Angle(pose,thigh.localRotation)>1,"Imported walking clip animates the skinned skeleton");
+            yield return new WaitForSeconds(10.8f);Session.car.Body.position=new Vector3(3,.4f,264);yield return new WaitForSecondsRealtime(.2f);
             check(Session.State==SessionState.Failed && Session.ResultTitle=="STOP sign not obeyed" && Session.Penalty.Contains("EUR 10"),"Rolling STOP is assessed with sourced rate");
             yield return Choose(2);yield return new WaitForSeconds(14);Session.car.Body.position=new Vector3(3,.4f,261);yield return new WaitForSecondsRealtime(.2f);
             check(Session.PassedStop,"Complete stop recorded behind line");Session.car.Body.position=new Vector3(3,.4f,276);yield return new WaitForSecondsRealtime(.2f);

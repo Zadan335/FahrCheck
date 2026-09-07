@@ -13,3 +13,6 @@
 *.pidb
 *.suo
 .DS_Store
+
+# Local generator safety copies; earlier tracked backups remain preserved.
+/Assets/FahrCheck/Preserved/*

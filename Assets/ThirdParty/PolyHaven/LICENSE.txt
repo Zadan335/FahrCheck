@@ -1,0 +1,5 @@
+Textures from Poly Haven (asphalt_01, brick_pavement, red_brick_03).
+CC0 1.0: https://polyhaven.com/license
+https://creativecommons.org/publicdomain/zero/1.0/
+Powered by Poly Haven (asset metadata).
+See Documentation/Asset-sources.md for individual source links.

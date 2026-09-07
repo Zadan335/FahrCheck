@@ -1,3 +1,17 @@
+# Current asset upgrade verification — 7 September 2026
+
+- `Logs/realism-final-build.log`: Unity 2022.3.62f3 compiled, generated Lindenallee, passed the existing 66 + 29 checks, plus 3,819 asset/material assertions, and built `Builds/Mac/FahrCheck-Realism.app`; exit 0.
+- New checks validate imported wheel attachment, a valid Humanoid avatar, looping idle/walk clip bindings, root-motion ownership, texture/normal maps, the reusable facade prefab and all enabled renderer materials.
+- Chase, pedestrian and cockpit camera renders were inspected. They do not capture the IMGUI overlay or establish interactive performance.
+- The executable is Intel x86_64. Unity version and scene GUID are unchanged. Asset sources and limitations: [Asset-sources.md](Asset-sources.md).
+- This pass fixes the missing built-in Animation module, incompatible imported car shaders, prefab wheel reparenting and persistent looping clip settings.
+- Artifact hashes: `Logs/realism-artifact-hashes.json`.
+
+- `Logs/realism-player.log`: 43 standalone runtime assertions passed before the user requested manual testing. The background test was stopped before full-suite completion; no complete standalone pass is claimed for this revision. Imported walking blend and moving skeleton assertions passed.
+- `FahrCheck-Realism.app` was opened normally without automation flags for user testing. The user tested the build before authorizing the asset upgrade for version tracking.
+
+---
+
 # Current Academy verification — 7 September 2026
 
 - `Logs/academy-final-build.log`: Unity 2022.3.62f3 generated the course, passed 66 existing plus 29 Academy rule/scene checks, and built the Intel x86_64 app; exit 0.

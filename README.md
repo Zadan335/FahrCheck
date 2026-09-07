@@ -1,6 +1,6 @@
 # FahrCheck — German driving challenge for Mac
 
-Unity **2022.3.62f3**, Intel Editor, **Built-in Render Pipeline**. Original primitive assets; no purchases or external art required. The Vehicles built-in package is enabled in `Packages/manifest.json` for `WheelCollider`.
+Unity **2022.3.62f3**, Intel Editor, **Built-in Render Pipeline**. Original geometry plus freely licensed CC0 models and photographed textures; no purchases required. The Vehicles built-in package is enabled in `Packages/manifest.json` for `WheelCollider`.
 
 ## Play
 
@@ -9,7 +9,7 @@ Unity **2022.3.62f3**, Intel Editor, **Built-in Render Pipeline**. Original prim
 3. Select one of four missions: **First Drive**, **City Priority**, **Crossing & Stop**, or **City Exam**, then click **Start driving** (or press Enter). Focus the Game view for keyboard controls.
 4. City Exam offers **LEFT** and **RIGHT** destinations. Indicate before turning, yield when required, and enter the selected mint destination gate. Other lessons finish at their own gates. All four missions share Lindenallee; completion is saved for normal play.
 
-For standalone play, open **Builds/Mac/FahrCheck-Academy.app**. The older FahrCheck.app is retained; use the Academy app for these updates.
+For standalone play, open **Builds/Mac/FahrCheck-Realism.app**. Older builds are retained; use the Realism app for the new assets.
 
 | Controls | Action |
 | --- | --- |
@@ -51,10 +51,10 @@ UNITY='/Applications/Unity/Hub/Editor/2022.3.62f3/Unity.app/Contents/MacOS/Unity
 "$UNITY" -batchmode -quit -projectPath "$PWD" -executeMethod FahrCheck.Editor.BuildVerification.BuildMac -logFile "$PWD/Logs/build-mac.log"
 ```
 
-The runtime suite intentionally has no `-quit`: it enters Play Mode, exercises actual WheelCollider physics, then exits with its result. It supplies automated controls through the same vehicle control path, and uses position injection for rule scenarios. It is not a substitute for a human driving the entire route. The build target is Intel x64 macOS with Mono scripting and a windowed player at `Builds/Mac/FahrCheck-Academy.app`. The development build can run the same suite with `-fahrcheckSmoke`. Automated checks disable human controls and exit on completion; omit that flag for normal play.
+The runtime suite intentionally has no `-quit`: it enters Play Mode, exercises actual WheelCollider physics, then exits with its result. It supplies automated controls through the same vehicle control path, and uses position injection for rule scenarios. It is not a substitute for a human driving the entire route. The build target is Intel x64 macOS with Mono scripting and a windowed player at `Builds/Mac/FahrCheck-Realism.app`. The development build can run the same suite with `-fahrcheckSmoke`. Automated checks disable human controls and exit on completion; omit that flag for normal play.
 
 ```sh
-Builds/Mac/FahrCheck-Academy.app/Contents/MacOS/FahrCheck -batchmode -nographics -fahrcheckSmoke -logFile "$PWD/Logs/academy-player.log"
+Builds/Mac/FahrCheck-Realism.app/Contents/MacOS/FahrCheck -batchmode -nographics -fahrcheckSmoke -logFile "$PWD/Logs/academy-player.log"
 ```
 
 The command above is a headless automated test, not normal play. Tests do not save mission progress. Normal play requires no command-line flags. The in-game guide contains 22 sign references and official catalogue links; only marked mission rules are enforced.
@@ -72,3 +72,7 @@ See [verification record](Documentation/Verification.md) for checks actually exe
 - `Scripts/CourseSession.cs`, `CourseEncounters.cs`, `TrafficSignal.cs`: mission state and scenario presentation.
 
 All paths above are relative to `Assets/FahrCheck/` unless otherwise stated.
+
+## Realism asset upgrade
+
+The course now uses an imported coupe with separate animated wheels, a skinned humanoid with idle/walk clips, photographed road/pavement/brick materials, reusable European window modules, gutters and individual-leaf trees. [Asset sources, licences and limitations](Documentation/Asset-sources.md) document exactly what was acquired and adapted. All imports remain compatible with the Built-in pipeline.
