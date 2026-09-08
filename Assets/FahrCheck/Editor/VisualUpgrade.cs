@@ -82,6 +82,8 @@ namespace FahrCheck.Editor
             traffic.positions=new[]{340f,310f,110f,65f}; traffic.cars=new Transform[4];
             Color[] paints={new Color(.65f,.12f,.1f),new Color(.75f,.78f,.8f),new Color(.1f,.18f,.24f),new Color(.68f,.55f,.28f)};
             for(int i=0;i<4;i++) { traffic.cars[i]=TrafficModel("Oncoming car "+i,new Vector3(-3,.65f,traffic.positions[i]),paints[i],false); traffic.cars[i].rotation=Quaternion.Euler(0,180,0); }
+            var sameDirection=new GameObject("Player-lane traffic").AddComponent<SameDirectionTraffic>();sameDirection.session=session;sameDirection.positions=new[]{82f,205f,335f};sameDirection.cars=new Transform[3];
+            for(int i=0;i<3;i++)sameDirection.cars[i]=TrafficModel("Same-direction car "+i,new Vector3(3,.65f,sameDirection.positions[i]),paints[(i+1)%paints.Length],false);
             for(int i=0;i<6;i++) { var parked=TrafficModel("Parked car "+i,new Vector3(i%2==0?12:-12,.65f,25+i*40),paints[i%4],true); parked.rotation=Quaternion.Euler(0,i%2==0?0:180,0); }
             // Replace the priority actor's placeholder with the same detailed car model.
             var old=session.encounters.priorityCar; var actor=TrafficModel("Priority car",old.position,new Color(.83f,.31f,.15f),false); actor.rotation=old.rotation; session.encounters.priorityCar=actor; Object.DestroyImmediate(old.gameObject);

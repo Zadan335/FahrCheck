@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 namespace FahrCheck.Editor
 {
@@ -7,8 +8,12 @@ namespace FahrCheck.Editor
         public static void Run()
         {
             int n=0;Action<bool,string> check=(ok,label)=>{n++;if(!ok)throw new Exception("Academy check failed: "+label);};
-            check(MissionCatalog.All.Length==4,"four missions");
+            check(MissionCatalog.All.Length==5,"five missions including Autobahn");
             check(MissionCatalog.All[0].Finish==110 && MissionCatalog.All[1].Signals && MissionCatalog.All[2].Stop && MissionCatalog.All[3].Turn,"distinct mission objectives");
+            check(MissionCatalog.All[4].Highway&&MissionCatalog.All[4].Finish==2000,"two-kilometre Autobahn mission");
+            var highway=UnityEngine.Object.FindObjectOfType<HighwayTraffic>();
+            check(highway!=null&&highway.cars.Length==25&&highway.laneX.Distinct().Count()==6,"six-lane dense Autobahn traffic configuration");
+            check(UnityEngine.Object.FindObjectsOfType<Transform>().Count(t=>t.name=="Flat zebra stripe")==5,"single flat five-stripe city zebra crossing");
             check(RouteRules.TurnArea(-1,298),"wide natural left-turn arc is recognised");
             check(RouteRules.Destination(-56,293,-1),"left destination zone");
             check(RouteRules.Destination(-57,293,-1),"remaining inside destination does not need another line crossing");

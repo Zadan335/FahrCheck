@@ -10,6 +10,7 @@ namespace FahrCheck
         {
             Session.Menu();yield return null;yield return null;
             Session.SelectMission(mission);Session.SelectRoute(direction);Session.Begin();Session.car.AutomatedInput=new CarController.Controls{brake=true};
+            var laneTraffic=UnityEngine.Object.FindObjectOfType<SameDirectionTraffic>();laneTraffic.enabled=false;foreach(var car in laneTraffic.cars)car.gameObject.SetActive(false);
             yield return new WaitForFixedUpdate();
         }
         public static IEnumerator Run(Action<bool,string> check)
@@ -26,10 +27,13 @@ namespace FahrCheck
             yield return new WaitForSeconds(.2f);
             check(Quaternion.Angle(pose,thigh.localRotation)>1,"Imported walking clip animates the skinned skeleton");
             yield return new WaitForSeconds(10.8f);Session.car.Body.position=new Vector3(3,.4f,264);yield return new WaitForSecondsRealtime(.2f);
-            check(Session.State==SessionState.Failed && Session.ResultTitle=="STOP sign not obeyed" && Session.Penalty.Contains("EUR 10"),"Rolling STOP is assessed with sourced rate");
+            check(Session.IsDriving && Session.LastViolationTitle=="STOP sign not obeyed" && Session.Penalty.Contains("EUR 10"),"Rolling STOP is recorded with sourced rate while route continues");
             yield return Choose(2);yield return new WaitForSeconds(14);Session.car.Body.position=new Vector3(3,.4f,261);yield return new WaitForSecondsRealtime(.2f);
             check(Session.PassedStop,"Complete stop recorded behind line");Session.car.Body.position=new Vector3(3,.4f,276);yield return new WaitForSecondsRealtime(.2f);
             check(Session.State==SessionState.Complete,"Lesson 3 crossing and STOP completion");
+            yield return Choose(4);check(Session.Mission.Highway&&Session.highwayWorld.activeSelf&&Mathf.Abs(Session.car.transform.position.x-312)<.1f&&Session.CurrentLimit==0,"Autobahn mission starts in right lane without posted limit");
+            Session.highwayTraffic.enabled=false;foreach(var highwayCar in Session.highwayTraffic.cars)highwayCar.gameObject.SetActive(false);Session.car.Body.position=new Vector3(312,.4f,2001);yield return new WaitForSecondsRealtime(.2f);
+            check(Session.State==SessionState.Complete&&Session.ResultTitle=="Autobahn complete","two-kilometre Autobahn destination completes clean mission");
             yield return Choose(0);var car=Session.car;
             var obstacle=new GameObject("Collision test vehicle");var collider=obstacle.AddComponent<BoxCollider>();collider.size=new Vector3(2,1.5f,1);
             obstacle.transform.position=new Vector3(3,1,24);obstacle.AddComponent<CollisionParticipant>();var body=obstacle.AddComponent<Rigidbody>();body.isKinematic=true;

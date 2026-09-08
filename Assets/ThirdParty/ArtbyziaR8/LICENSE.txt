@@ -1,0 +1,7 @@
+Audi R8 2017 by artbyzia
+Source: https://sketchfab.com/3d-models/audi-r8-2017-3702de6c13cb4829afba67aaf2e92963
+Licence: Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+Downloaded by the project owner. Official Sketchfab model metadata confirms CC BY 4.0.
+Adaptations in FahrCheck: Unity Built-in materials, metre-scale alignment and wheel grouping for the existing vehicle physics.
+No endorsement by the creator or Audi is implied. Manufacturer branding rights are separate from the model licence.

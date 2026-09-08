@@ -10,7 +10,7 @@ namespace FahrCheck.Editor {
   const string RealPath="Assets/FahrCheck/Generated/Realism";
   static void RealismPass(CourseSession session){
    if(!AssetDatabase.IsValidFolder(RealPath))AssetDatabase.CreateFolder("Assets/FahrCheck/Generated","Realism");
-   SurfaceMaterials();UpgradeCars(session);UpgradePedestrian(session);FacadeKit();LeafyTrees();
+   SurfaceMaterials();UpgradeCars(session);UpgradePedestrian(session);AddAmbientPedestrians(session);FacadeKit();LeafyTrees();
    QualitySettings.antiAliasing=4;QualitySettings.shadowDistance=100;
    RenderSettings.sun.color=new Color(1,.96f,.91f);RenderSettings.sun.intensity=1.05f;
   }
@@ -48,7 +48,7 @@ namespace FahrCheck.Editor {
      if(player && (session.car.brakeLamps.Contains(r)||session.car.leftIndicators.Contains(r)||session.car.rightIndicators.Contains(r)||r.name=="Dashboard"))continue;
      r.enabled=false;
     }
-    var model=(GameObject)PrefabUtility.InstantiatePrefab(prefab);if(player)PrefabUtility.UnpackPrefabInstance(model,PrefabUnpackMode.Completely,InteractionMode.AutomatedAction);model.name="Imported coupe";model.transform.SetParent(root,false);model.transform.localRotation=Quaternion.Euler(0,180,0);model.transform.localScale=new Vector3(15.5f,19,19);model.transform.localPosition=new Vector3(0,.81f,0);
+    var model=(GameObject)PrefabUtility.InstantiatePrefab(prefab);PrefabUtility.UnpackPrefabInstance(model,PrefabUnpackMode.Completely,InteractionMode.AutomatedAction);model.name="Imported coupe";model.transform.SetParent(root,false);model.transform.localRotation=Quaternion.Euler(0,180,0);model.transform.localScale=new Vector3(15.5f,19,19);model.transform.localPosition=new Vector3(0,.81f,0);
     foreach(var c in model.GetComponentsInChildren<Collider>())Object.DestroyImmediate(c);
     foreach(var b in model.GetComponentsInChildren<Rigidbody>())Object.DestroyImmediate(b);
     if(player){
@@ -61,7 +61,21 @@ namespace FahrCheck.Editor {
       wheel.SetParent(pivot,true);wheel.position+=pivot.position-center;
       // Existing wheel pivots retain WheelCollider pose updates and steering.
      }
-    }
+    } else GroundTraffic(root,model);
+   }
+  }
+  static void GroundTraffic(Transform root,GameObject model){
+   Physics.SyncTransforms();
+   var surfaces=Physics.RaycastAll(root.position+Vector3.up*5,Vector3.down,12).Where(h=>!h.collider.transform.IsChildOf(root) && h.collider.GetComponent<Renderer>()!=null && new[]{"Grass","Asphalt","Pavement"}.Contains(h.collider.GetComponent<Renderer>().sharedMaterial.name)).OrderBy(h=>h.distance).ToArray();
+   if(surfaces.Length==0)throw new Exception("No road or ground below "+root.name);
+   var names=new[]{"WheelFrontL","WheelFrontR","WheelRearL","WheelReartR"};
+   var tyres=names.Select(n=>model.GetComponentsInChildren<Transform>().First(t=>t.name==n).GetComponent<Renderer>()).ToArray();
+   model.transform.position+=Vector3.up*(surfaces[0].point.y-tyres.Min(r=>r.bounds.min.y));
+   var motion=root.gameObject.AddComponent<TrafficWheelMotion>();motion.surfaceHeight=surfaces[0].point.y;
+   motion.wheels=new Transform[4];motion.radii=new float[4];
+   for(int i=0;i<4;i++){
+    var pivot=new GameObject("Traffic wheel "+i).transform;pivot.SetParent(root,false);pivot.position=tyres[i].bounds.center;
+    motion.radii[i]=tyres[i].bounds.extents.y;tyres[i].transform.SetParent(pivot,true);pivot.position=new Vector3(pivot.position.x,motion.surfaceHeight+motion.radii[i],pivot.position.z);motion.wheels[i]=pivot;
    }
   }
   static void UpgradePedestrian(CourseSession session){
@@ -113,6 +127,24 @@ namespace FahrCheck.Editor {
    // Preview a valid idle pose in saved scene renders; Play Mode uses the controller.
    idle.SampleAnimation(model,0);
    PrefabUtility.SaveAsPrefabAsset(root.gameObject,RealPath+"/Civilian.prefab");
+  }
+  static void AddAmbientPedestrians(CourseSession session){
+   var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(RealPath+"/Civilian.prefab");
+   var paths=new[]{
+    new[]{new Vector3(-8.3f,0,18),new Vector3(-8.3f,0,108)},new[]{new Vector3(8.3f,0,150),new Vector3(8.3f,0,179)},
+    new[]{new Vector3(-8.3f,0,205),new Vector3(-8.3f,0,238)},new[]{new Vector3(8.3f,0,252),new Vector3(8.3f,0,278)},
+    new[]{new Vector3(-65,0,127.5f),new Vector3(-18,0,127.5f)},new[]{new Vector3(-65,0,198.5f),new Vector3(-18,0,198.5f)},
+    new[]{new Vector3(15,0,281.5f),new Vector3(52,0,281.5f)},new[]{new Vector3(-52,0,298.5f),new Vector3(-15,0,298.5f)} };
+   var colours=new[]{new Color(.38f,.12f,.1f),new Color(.08f,.24f,.38f),new Color(.32f,.3f,.12f),new Color(.28f,.12f,.34f)};
+   for(int i=0;i<paths.Length;i++){
+    var person=Object.Instantiate(prefab,world);person.name="Ambient pedestrian "+i;person.transform.position=paths[i][0];person.transform.localScale*=.92f+(i%3)*.04f;
+    foreach(var renderer in person.GetComponentsInChildren<SkinnedMeshRenderer>()){
+     var materials=renderer.sharedMaterials;
+     for(int m=0;m<materials.Length;m++)if(materials[m].name=="Civilian navy knit")materials[m]=Mat("Ambient pedestrian clothing "+i,colours[i%colours.Length]);
+     renderer.sharedMaterials=materials;
+    }
+    var walker=person.AddComponent<AmbientPedestrianWalker>();walker.session=session;walker.start=paths[i][0];walker.end=paths[i][1];walker.speed=.75f+(i%4)*.12f;walker.phase=i*6.7f;
+   }
   }
   static void FacadeKit(){
    var stone=Mat("Limestone frames",new Color(.65f,.63f,.57f));var metal=Mat("Zinc gutters",new Color(.28f,.3f,.31f));var glass=Mat("Recessed window glass",new Color(.09f,.13f,.16f));glass.SetFloat("_Glossiness",.8f);glass.SetFloat("_Metallic",.25f);

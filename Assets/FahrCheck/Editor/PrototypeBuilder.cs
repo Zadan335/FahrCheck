@@ -70,8 +70,10 @@ namespace FahrCheck.Editor
             hud.car = car;
 
             UpgradeVisuals(session);
+            HighwayPass(session);
             ProfessionalPass(session);
             RealismPass(session);
+            AudiR8Pass(session);
             PlayerSettings.companyName = "FahrCheck";
             PlayerSettings.productName = "FahrCheck";
             PlayerSettings.defaultScreenWidth = 1440;
@@ -225,7 +227,11 @@ namespace FahrCheck.Editor
 
             Box("Unsigned cross street", world, new Vector3(0,-.03f,190), new Vector3(80,.08f,12), asphalt,true);
             Box("Final right turn street", world, new Vector3(0,-.03f,290), new Vector3(144,.08f,12), asphalt,true);
-            for (int x = -5; x <= 5; x += 2) Box("Zebra crossing", world, new Vector3(x,.03f,245), new Vector3(1,.015f,4),white);
+            HorizontalRoadMarkings(136,78,46,6.6f,white);
+            HorizontalRoadMarkings(190,33,23.5f,5.7f,white);
+            HorizontalRoadMarkings(290,65,39.5f,5.7f,white);
+            // Signal-controlled junctions use stop lines, not zebra stripes. The dedicated crossing is at z=245.
+            ZebraCrossing(245,white);
             Label("ZEBRA CROSSING",world,new Vector3(8,3,242),.1f,Color.white);
             Label("<- LEFT     RIGHT ->",world,new Vector3(2,3,280),.12f,Color.white);
             var finishRoot = new GameObject("Finish gate").transform;
@@ -239,6 +245,21 @@ namespace FahrCheck.Editor
                 Box("Finish tile", finishRoot, new Vector3(-5.5f + i, 0.026f, 0f), new Vector3(0.9f, 0.014f, 1f), i % 2 == 0 ? white : asphalt);
             var leftFinish = Object.Instantiate(finishRoot.gameObject,world).transform;
             leftFinish.name = "Left route finish gate"; leftFinish.position = new Vector3(-EncounterRules.FinishX,0,290); leftFinish.rotation = Quaternion.Euler(0,-90,0);
+        }
+
+        static void HorizontalRoadMarkings(float z,float sideLength,float sideCenter,float edge,Material white)
+        {
+            foreach(int side in new[]{-1,1})
+            {
+                Box("Side-road edge line",world,new Vector3(side*sideCenter,.021f,z-edge),new Vector3(sideLength,.012f,.12f),white);
+                Box("Side-road edge line",world,new Vector3(side*sideCenter,.021f,z+edge),new Vector3(sideLength,.012f,.12f),white);
+                for(float x=9;x<sideCenter+sideLength*.5f;x+=9)Box("Side-road centre dash",world,new Vector3(side*x,.022f,z),new Vector3(4,.012f,.14f),white);
+            }
+        }
+
+        static void ZebraCrossing(float z,Material white)
+        {
+            for(int stripe=-2;stripe<=2;stripe++)Box("Flat zebra stripe",world,new Vector3(0,.027f,z+stripe*.82f),new Vector3(10.8f,.012f,.48f),white);
         }
 
         static void SpeedSign(int limit, float z)

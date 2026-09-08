@@ -8,6 +8,7 @@ namespace FahrCheck
     public sealed class RuntimeVerification : MonoBehaviour
     {
         public static bool Active { get; private set; }
+        public static bool SuppressLaneTraffic { get; private set; }
         static int errors;
         int checks;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -39,9 +40,14 @@ namespace FahrCheck
             session.SelectMission(3);
             var car = session.car;
             Check(session.State == SessionState.Welcome && Time.timeScale == 0, "Welcome pauses simulation");
+            var trafficWheel = FindObjectOfType<AmbientTraffic>().cars[0].GetComponent<TrafficWheelMotion>();
+            var initialWheelRotation = trafficWheel.wheels[0].localRotation;
             session.Begin();
             car.AutomatedInput = new CarController.Controls { brake = true };
             yield return new WaitForSeconds(1);
+            Check(trafficWheel.TravelledDistance > 1 && Quaternion.Angle(initialWheelRotation, trafficWheel.wheels[0].localRotation) > 1, "Traffic wheels roll with actual travel");
+            foreach(var vehicle in FindObjectsOfType<TrafficWheelMotion>())
+                if(vehicle.name.StartsWith("Parked car")) Check(vehicle.TravelledDistance < .001f, "Parked wheels remain stationary: " + vehicle.name);
             Check(car.wheels[0].isGrounded && car.wheels[3].isGrounded, "Car settles on wheel colliders");
             car.AutomatedInput = new CarController.Controls { throttle = 1 };
             yield return new WaitForSeconds(3);
@@ -78,6 +84,13 @@ namespace FahrCheck
             yield return null; yield return new WaitForFixedUpdate();
             session = FindObjectOfType<CourseSession>(); car = session.car;
             Check(session.IsDriving && car.FrontPosition.z < 25, "Retry reloads and starts course");
+            var laneTraffic=FindObjectOfType<SameDirectionTraffic>();float laneCarStart=laneTraffic.positions[0];
+            car.Body.position=new Vector3(3,.4f,laneCarStart+8);car.Body.velocity=Vector3.zero;
+            yield return new WaitForSecondsRealtime(1f);
+            Check(laneTraffic.positions[0]-laneCarStart<2.5f && car.Body.position.z-laneTraffic.positions[0]>4.5f,"Same-lane traffic brakes for blocked player car");
+            SuppressLaneTraffic=true;
+            session.Restart();yield return null;yield return new WaitForFixedUpdate();session=FindObjectOfType<CourseSession>();car=session.car;
+            laneTraffic=FindObjectOfType<SameDirectionTraffic>();laneTraffic.enabled=false;foreach(var laneCar in laneTraffic.cars)laneCar.gameObject.SetActive(false);
             car.Body.position = new Vector3(8, .4f, 30);
             yield return new WaitForSecondsRealtime(.15f);
             Check(session.State == SessionState.Failed && session.ResultSource == "MISSION BOUNDARY", "Boundary is distinct from traffic violation");
@@ -85,12 +98,12 @@ namespace FahrCheck
             session = FindObjectOfType<CourseSession>(); car = session.car;
             car.Body.position = new Vector3(3, .4f, 67); car.Body.velocity = Vector3.forward * 10;
             yield return new WaitForSecondsRealtime(.15f);
-            Check(session.State == SessionState.Failed && session.ResultTitle == "Speed limit exceeded", "Speeding ends attempt with explanation");
+            Check(session.IsDriving && session.LastViolationTitle == "Speed limit exceeded" && session.ShowViolationNotification, "Speeding records an on-screen foul while driving continues");
             session.Restart(); yield return null; yield return new WaitForFixedUpdate();
             session = FindObjectOfType<CourseSession>(); car = session.car;
             car.Body.position = new Vector3(3, .4f, 128);
             yield return new WaitForSecondsRealtime(.15f);
-            Check(session.State == SessionState.Failed && session.ResultTitle == "Stop signal crossed", "Red entry ends attempt");
+            Check(session.IsDriving && session.LastViolationTitle == "Stop signal crossed", "Red entry records a foul without ending the route");
             session.Restart(); yield return null; yield return new WaitForFixedUpdate();
             session = FindObjectOfType<CourseSession>(); car = session.car;
             car.AutomatedInput = new CarController.Controls { brake = true };
@@ -104,7 +117,7 @@ namespace FahrCheck
             yield return new WaitForSeconds(1.5f);
             car.Body.position = new Vector3(3,.4f,185);
             yield return new WaitForSecondsRealtime(.15f);
-            Check(session.State == SessionState.Failed && session.ResultTitle == "Right of way not given", "Conflicting right-hand traffic ends attempt");
+            Check(session.IsDriving && session.LastViolationTitle == "Right of way not given", "Conflicting right-hand traffic records a foul");
             session.Restart(); yield return null; yield return new WaitForFixedUpdate();
             session = FindObjectOfType<CourseSession>(); car = session.car;
             car.AutomatedInput = new CarController.Controls { brake = true };
@@ -116,7 +129,7 @@ namespace FahrCheck
             Check(session.IsDriving && session.PassedPriority, "Waiting for right-hand traffic permits entry");
             car.Body.position = new Vector3(3,.4f,244);
             yield return new WaitForSecondsRealtime(.15f);
-            Check(session.State == SessionState.Failed && session.ResultTitle == "Pedestrian priority not given", "Visible pedestrian intent prevents crossing entry");
+            Check(session.IsDriving && session.LastViolationTitle == "Pedestrian priority not given", "Visible pedestrian intent violation is recorded");
             session.Restart(); yield return null; yield return new WaitForFixedUpdate();
             session = FindObjectOfType<CourseSession>(); car = session.car;
             car.AutomatedInput = new CarController.Controls { brake = true };
@@ -130,7 +143,11 @@ namespace FahrCheck
             Check(session.IsDriving && session.PassedCrossing, "Waiting for pedestrian permits crossing");
             car.Body.position = new Vector3(3,.4f,287); car.Body.rotation = Quaternion.Euler(0,30,0);
             yield return new WaitForSecondsRealtime(.15f);
-            Check(session.State == SessionState.Failed && session.ResultTitle == "RIGHT turn not signalled", "Unsignalled actual heading change ends attempt");
+            Check(session.IsDriving && session.LastViolationTitle == "RIGHT turn not signalled", "Unsignalled actual heading change records a foul");
+            car.Body.rotation=Quaternion.Euler(0,90,0);yield return new WaitForSecondsRealtime(.15f);
+            car.Body.position = new Vector3(56,.4f,287);
+            yield return new WaitForSecondsRealtime(.15f);
+            Check(session.State==SessionState.Failed && session.ResultTitle.Contains("Mission failed") && session.ResultDetail.Contains("RIGHT turn not signalled"),"Completed route fails with accumulated foul list");
             session.Restart(); yield return null; yield return new WaitForFixedUpdate();
             session = FindObjectOfType<CourseSession>(); car = session.car;
             car.AutomatedInput = new CarController.Controls { brake = true };

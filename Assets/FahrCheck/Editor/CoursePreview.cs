@@ -17,9 +17,11 @@ namespace FahrCheck.Editor
             camera.transform.LookAt(new Vector3(6.5f,.95f,245));
             Save(camera,"Logs/academy-pedestrian.ppm");
             var car=Object.FindObjectOfType<CarController>();
-            camera.transform.position=car.transform.TransformPoint(new Vector3(-.43f,1.45f,.25f));
+            camera.transform.position=car.transform.TransformPoint(Object.FindObjectOfType<DrivingCamera>().cockpitOffset);
             camera.transform.LookAt(car.transform.position+car.transform.forward*12+Vector3.up*1.15f);
             Save(camera,"Logs/realism-cockpit.ppm");
+            var highway=Object.FindObjectOfType<HighwayTraffic>();
+            if(highway!=null){camera.transform.position=new Vector3(350,72,105);camera.transform.LookAt(new Vector3(300,0,310));Save(camera,"Logs/autobahn-course.ppm");camera.transform.position=new Vector3(312,3.4f,-9);camera.transform.LookAt(new Vector3(312,4.2f,250));Save(camera,"Logs/autobahn-mountains.ppm");}
             camera.transform.SetPositionAndRotation(position,rotation);
         }
         static void Save(Camera camera, string path)

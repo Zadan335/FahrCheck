@@ -98,6 +98,9 @@ namespace FahrCheck.Editor
 
             if (failures.Count > 0)
                 throw new InvalidOperationException("FahrCheck checks failed:\n- " + string.Join("\n- ", failures));
+            check(TrafficSafety.ObstacleAhead(3,50,1,3,60,15),"same-direction traffic detects player ahead");
+            check(TrafficSafety.ObstacleAhead(-3,60,-1,-3,50,14),"oncoming traffic detects player obstruction");
+            check(!TrafficSafety.ObstacleAhead(3,50,1,-3,55,15),"traffic braking ignores opposite lane");
             Debug.Log("FahrCheck: all " + count + " rule and scene checks passed. Driving feel and rendering still require a Play Mode check.");
         }
     }

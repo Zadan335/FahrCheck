@@ -45,7 +45,7 @@ namespace FahrCheck.Editor
                 if(gate.name=="Left route finish gate") gate.gameObject.AddComponent<MissionGate>().direction=-1;
             }
             foreach(var t in world.GetComponentsInChildren<Transform>())
-                if(t.name.StartsWith("Oncoming car ") || t.name.StartsWith("Parked car ") || t.name=="Priority car")
+                if(t.name.StartsWith("Oncoming car ") || t.name.StartsWith("Same-direction car ") || t.name.StartsWith("Highway car ") || t.name.StartsWith("Parked car ") || t.name=="Priority car")
                 {
                     var collider=t.gameObject.AddComponent<BoxCollider>(); collider.center=new Vector3(0,.8f,0); collider.size=new Vector3(1.8f,1.2f,4.2f);
                     t.gameObject.AddComponent<CollisionParticipant>();
@@ -53,6 +53,9 @@ namespace FahrCheck.Editor
                 }
             BuildHuman(session);
             BuildSignBoards();
+            AddOpenJunctionDetails();
+            AddCornerFuelStations();
+            ExpandSideStreetArchitecture();
             var camera=Object.FindObjectOfType<Camera>();
             var grade=Mat("Driving colour grade",Color.white);grade.shader=Shader.Find("Hidden/FahrCheck/DriveGrade");
             camera.gameObject.AddComponent<DrivePresentation>().grade=grade;
@@ -81,6 +84,115 @@ namespace FahrCheck.Editor
             // Remove floating instructional text; guidance lives in the HUD.
             foreach(var text in world.GetComponentsInChildren<TextMesh>()) if(text.text=="30 ahead" || text.text=="ZEBRA CROSSING" || text.text.Contains("LEFT     RIGHT")) Object.DestroyImmediate(text.gameObject);
             RenderSettings.ambientIntensity=.8f; RenderSettings.sun.transform.rotation=Quaternion.Euler(34,-35,0);
+        }
+        static void AddOpenJunctionDetails()
+        {
+            var stone=Mat("Junction planter stone",new Color(.42f,.44f,.42f));
+            var hedge=Mat("Low junction hedge",new Color(.12f,.29f,.13f));
+            var metal=Mat("Junction guard rail",new Color(.34f,.38f,.39f));
+            // Low objects fill the long side street while preserving the driver's sight triangle.
+            foreach(int side in new[]{-1}) foreach(float x in new[]{18f,27f,36f})
+            {
+                float px=x*side;
+                Box("Low junction planter",world,new Vector3(px,.28f,199),new Vector3(5,.55f,1.1f),stone,true);
+                Box("Low junction hedge",world,new Vector3(px,.72f,199),new Vector3(4.5f,.85f,.8f),hedge);
+            }
+            foreach(int side in new[]{-1,1})
+            {
+                Box("Open junction rail",world,new Vector3(side*31,.42f,181),new Vector3(18,.08f,.08f),metal);
+                for(float x=22;x<=40;x+=6) Box("Open junction rail post",world,new Vector3(side*x,.4f,181),new Vector3(.08f,.8f,.08f),metal);
+            }
+        }
+        static void AddCornerFuelStations()
+        {
+            var concrete=Mat("Fuel station forecourt",new Color(.43f,.45f,.44f));
+            var white=Mat("Fuel station white",new Color(.86f,.87f,.84f));
+            var blue=Mat("Fuel station blue",new Color(.035f,.18f,.34f));
+            var red=Mat("Fuel station red",new Color(.72f,.035f,.025f));
+            var dark=Mat("Fuel station charcoal",new Color(.055f,.065f,.07f));
+            var warm=Mat("Fuel station interior light",new Color(.92f,.72f,.38f),true);
+            var brick=Mat("Fuel district brick",new Color(.48f,.29f,.22f));
+            var glass=Mat("Fuel station glass",new Color(.12f,.25f,.31f));glass.SetFloat("_Glossiness",.78f);
+            foreach(float junctionZ in new[]{136f,190f})
+            {
+                var station=new GameObject("Corner fuel station "+junctionZ).transform;station.SetParent(world,false);
+                // Everything starts beyond x=18 and sits north of the side road, keeping its approach visible.
+                Box("Forecourt",station,new Vector3(29,.035f,junctionZ+15),new Vector3(27,.07f,16),concrete,true);
+                Box("Service shop",station,new Vector3(38,1.65f,junctionZ+18),new Vector3(8,3.3f,8),white,true);
+                Box("Shop parapet",station,new Vector3(38,3.42f,junctionZ+18),new Vector3(8.5f,.28f,8.5f),dark);
+                Box("Shop fascia",station,new Vector3(33.96f,2.75f,junctionZ+18),new Vector3(.09f,.55f,8.1f),blue);
+                for(int pane=-1;pane<=1;pane++)Box("Shop window",station,new Vector3(33.90f,1.35f,junctionZ+18+pane*2.2f),new Vector3(.08f,1.65f,1.65f),glass);
+                Box("Shop entrance",station,new Vector3(33.84f,1.15f,junctionZ+21),new Vector3(.12f,2.3f,1.25f),glass,true);
+                Label("FAHRCHECK ENERGIE",station,new Vector3(33.82f,2.78f,junctionZ+18),.065f,Color.white);
+                Box("Pump canopy",station,new Vector3(25,3.7f,junctionZ+13),new Vector3(13,.35f,7),white);
+                Box("Canopy stripe",station,new Vector3(25,3.78f,junctionZ+9.48f),new Vector3(13,.38f,.12f),red);
+                Box("Canopy blue fascia",station,new Vector3(18.48f,3.72f,junctionZ+13),new Vector3(.14f,.62f,7.1f),blue);
+                Box("Canopy warm lighting",station,new Vector3(25,3.49f,junctionZ+13),new Vector3(10,.03f,4.5f),warm);
+                foreach(int side in new[]{-1,1})
+                {
+                    Box("Canopy column",station,new Vector3(25+side*5.3f,1.85f,junctionZ+13),new Vector3(.22f,3.7f,.22f),white);
+                    float pumpX=25+side*2.4f;
+                    Box("Pump island",station,new Vector3(pumpX,.09f,junctionZ+13),new Vector3(1.55f,.18f,1.4f),white,true);
+                    Box("Fuel pump",station,new Vector3(pumpX,.78f,junctionZ+13),new Vector3(.88f,1.48f,.7f),blue,true);
+                    Box("Pump illuminated header",station,new Vector3(pumpX,1.4f,junctionZ+13),new Vector3(.92f,.22f,.73f),red);
+                    Box("Pump display",station,new Vector3(pumpX,1.05f,junctionZ+12.64f),new Vector3(.54f,.32f,.03f),glass);
+                    Box("Pump keypad",station,new Vector3(pumpX,.72f,junctionZ+12.63f),new Vector3(.4f,.16f,.035f),dark);
+                    var hose=Shape("Fuel hose",PrimitiveType.Cylinder,station,new Vector3(pumpX+side*.55f,.75f,junctionZ+13),new Vector3(.045f,.62f,.045f),dark);hose.transform.localRotation=Quaternion.Euler(0,0,8*side);
+                    Box("Fuel nozzle",station,new Vector3(pumpX+side*.62f,.48f,junctionZ+12.7f),new Vector3(.1f,.34f,.08f),dark);
+                    foreach(int guard in new[]{-1,1})Shape("Pump bollard",PrimitiveType.Cylinder,station,new Vector3(pumpX+guard*.7f,.38f,junctionZ+13),new Vector3(.12f,.38f,.12f),red,true);
+                }
+                Box("Fuel price pylon",station,new Vector3(17.5f,2.1f,junctionZ+20),new Vector3(.65f,4.2f,.65f),blue);
+                Box("Fuel price panel",station,new Vector3(17.5f,3.15f,junctionZ+20),new Vector3(1.8f,1.7f,.18f),white);
+                Label("E5\nE10\nDIESEL",station,new Vector3(17.5f,3.15f,junctionZ+19.88f),.055f,new Color(.72f,.035f,.025f));
+                // A recessed urban block completes the corner without enclosing the road approach.
+                foreach(int buildingIndex in new[]{0,1})
+                {
+                    float bx=51+buildingIndex*13, height=buildingIndex==0?8.5f:11f;
+                    Box("Fuel district building",station,new Vector3(bx,height*.5f,junctionZ+27),new Vector3(11,height,12),buildingIndex==0?brick:white,true);
+                    Box("Fuel district roof",station,new Vector3(bx,height+.18f,junctionZ+27),new Vector3(11.5f,.36f,12.5f),dark);
+                    for(float floor=1.7f;floor<height-1;floor+=2.4f)for(int bay=-1;bay<=1;bay++)
+                        Box("Fuel district window",station,new Vector3(bx+bay*3,floor,junctionZ+20.94f),new Vector3(1.7f,1.25f,.08f),glass);
+                    Box("Fuel district entrance",station,new Vector3(bx,1.2f,junctionZ+20.88f),new Vector3(1.5f,2.4f,.12f),dark,true);
+                }
+            }
+        }
+        static void ExpandSideStreetArchitecture()
+        {
+            var pavement=Mat("Pavement",new Color(.64f,.65f,.62f));
+            var glass=Mat("Side street glazing",new Color(.10f,.19f,.23f));glass.SetFloat("_Glossiness",.72f);
+            var roof=Mat("Side street roof",new Color(.12f,.15f,.17f));
+            var facades=new[]{new Color(.56f,.32f,.24f),new Color(.76f,.72f,.61f),new Color(.48f,.53f,.5f),new Color(.67f,.48f,.34f)};
+            // Pavements follow the long arms visible in the screenshots.
+            foreach(float z in new[]{127.5f,144.5f,181.5f,198.5f})foreach(int side in new[]{-1,1})Box("Side-road pavement",world,new Vector3(side*40.5f,.04f,z),new Vector3(69,.16f,4),pavement,true);
+            foreach(float z in new[]{281.5f,298.5f})foreach(int side in new[]{-1,1})Box("Final-road pavement",world,new Vector3(side*39,.04f,z),new Vector3(66,.16f,4),pavement,true);
+            int buildingNumber=0;
+            foreach(var p in new[]{
+                new Vector3(-30,0,119),new Vector3(-47,0,119),new Vector3(-64,0,119),
+                new Vector3(-28,0,153),new Vector3(-46,0,153),new Vector3(-63,0,153),
+                new Vector3(-28,0,173),new Vector3(-47,0,173),new Vector3(-64,0,173),
+                new Vector3(-30,0,207),new Vector3(-49,0,207),new Vector3(-66,0,207),
+                new Vector3(22,0,273),new Vector3(40,0,273),new Vector3(58,0,273),
+                new Vector3(22,0,307),new Vector3(40,0,307),new Vector3(58,0,307),
+                new Vector3(-22,0,273),new Vector3(-40,0,273),new Vector3(-58,0,273),
+                new Vector3(-22,0,307),new Vector3(-40,0,307),new Vector3(-58,0,307)})
+            {
+                float height=6.8f+(buildingNumber%3)*1.7f, width=14+(buildingNumber%2)*2;
+                var root=new GameObject("Side street architecture "+buildingNumber).transform;root.SetParent(world,false);root.position=p;
+                Box("Building",root,new Vector3(0,height*.5f,0),new Vector3(width,height,12),Mat("Side facade "+(buildingNumber%4),facades[buildingNumber%4]),true);
+                Box("Roof",root,new Vector3(0,height+.18f,0),new Vector3(width+.5f,.36f,12.5f),roof);
+                int face=p.z==119||p.z==173||p.z==273?1:-1;
+                for(float floor=1.7f;floor<height-1;floor+=2.35f)for(int bay=-2;bay<=2;bay++)
+                    Box("Window",root,new Vector3(bay*width/6,floor,face*6.03f),new Vector3(1.35f,1.2f,.08f),glass);
+                Box("Entrance",root,new Vector3(0,1.15f,face*6.08f),new Vector3(1.45f,2.3f,.12f),roof,true);
+                buildingNumber++;
+            }
+            var trunk=Mat("Bark",new Color(.34f,.28f,.21f));var leaves=Mat("Leaves",new Color(.27f,.43f,.3f));
+            foreach(var p in new[]{new Vector3(-18,0,118),new Vector3(-18,0,154),new Vector3(-18,0,172),new Vector3(-18,0,208),new Vector3(14,0,272),new Vector3(32,0,308),new Vector3(-32,0,272),new Vector3(-14,0,308)})
+            {
+                var tree=new GameObject("Linden tree").transform;tree.SetParent(world,false);tree.position=p;
+                Shape("Trunk",PrimitiveType.Cylinder,tree,new Vector3(0,1.8f,0),new Vector3(.4f,1.8f,.4f),trunk);
+                Shape("Crown",PrimitiveType.Sphere,tree,new Vector3(0,4.4f,0),new Vector3(3.8f,4.8f,3.5f),leaves);
+            }
         }
         static void BuildSignBoards()
         {

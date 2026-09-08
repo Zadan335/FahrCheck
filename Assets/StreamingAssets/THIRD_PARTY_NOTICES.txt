@@ -1,0 +1,20 @@
+FahrCheck asset acknowledgements
+
+Audi R8 2017 by artbyzia
+https://sketchfab.com/3d-models/audi-r8-2017-3702de6c13cb4829afba67aaf2e92963
+Creative Commons Attribution 4.0 International
+https://creativecommons.org/licenses/by/4.0/
+Modified for FahrCheck: materials, scale, wheel grouping, lamps and camera placement.
+No endorsement by artbyzia or Audi is implied.
+
+Free Coupe Car by Alexander123 — CC0
+https://opengameart.org/content/3d-car-low-poly-free
+
+Universal Base Characters and Universal Animation Library by Quaternius — CC0
+https://quaternius.com/
+
+Asphalt 01, Brick Pavement and Red Brick 03 from Poly Haven — CC0
+https://polyhaven.com/
+Powered by Poly Haven for asset metadata.
+
+CC0: https://creativecommons.org/publicdomain/zero/1.0/

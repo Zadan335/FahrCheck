@@ -31,3 +31,15 @@ Rebuild through FahrCheck → Open Setup. The generator reconstructs this integr
 ![Upgraded street](Images/realism-street.png)
 
 ![Skinned pedestrian and crossing](Images/realism-pedestrian.png)
+
+## Audi R8 player-car replacement
+
+The owner supplied `audi-r8-2017.zip`, containing a nested FBX ZIP and texture RAR. Its ASCII FBX contains 72,290 triangles and imports as 168 mesh renderers. Three textures are supplied; most finishes are material-based.
+
+Model: **Audi R8 2017 by artbyzia**. Source: https://sketchfab.com/3d-models/audi-r8-2017-3702de6c13cb4829afba67aaf2e92963 . Licence: **CC BY 4.0**, https://creativecommons.org/licenses/by/4.0/ . Official Sketchfab API metadata confirms commercial use is allowed with attribution. No creator or manufacturer endorsement is implied; the asset copyright licence does not grant separate manufacturer branding rights.
+
+Adaptations: Standard-shader paint, glass, metal and lamp materials; metre-scale alignment; four grouped wheels fitted to existing WheelColliders; left-hand steering-assembly placement; driver-camera position. The source includes interior geometry. Brakes/calipers are currently grouped with the spinning wheel assemblies; this is a visual simplification. Mirrors are reflective-looking geometry, not live rear-view cameras. Existing scripted traffic retains the lightweight coupe.
+
+The original downloaded files are under `Assets/ThirdParty/ArtbyziaR8`. The generated visual prefab is `Assets/FahrCheck/Generated/Realism/AudiR8Visual.prefab`. The course generator recreates the integration. In-game attribution appears on the welcome screen, and notices ship in `Assets/StreamingAssets/THIRD_PARTY_NOTICES.txt`.
+
+This is the newly supplied Sketchfab model, not the earlier Personal Use Free3D model. The Free3D files were inspected only in temporary storage and were not imported into the project.

@@ -25,10 +25,11 @@ namespace FahrCheck
             if(session.IsDriving)
             {
                 Fill(new Rect(w/2-345,99,690,65),Ink);GUI.Label(new Rect(w/2-330,107,660,30),session.encounters.Guidance,body);GUI.Label(new Rect(w/2-330,137,660,22),session.CheckpointStatus,small);
+                if(session.ShowViolationNotification){Fill(new Rect(w/2-345,174,690,76),new Color(.48f,.055f,.035f,.96f));GUI.Label(new Rect(w/2-326,184,652,55),session.ViolationNotification,body);}
             }
             Fill(new Rect(20,h-182,280,150),Ink);GUI.Label(new Rect(39,h-177,142,75),Mathf.RoundToInt(car.SpeedKmh).ToString("00"),digits);GUI.Label(new Rect(44,h-102,125,22),"km/h   |   "+(car.SignedSpeed<-.2f?"REVERSE":"DRIVE"),small);
             Circle(new Rect(191,h-159,84,84),new Color(.8f,.06f,.07f));Circle(new Rect(198,h-152,70,70),Color.white);
-            var limit=Style(30,Color.black,true);limit.alignment=TextAnchor.MiddleCenter;GUI.Label(new Rect(198,h-152,70,70),session.CurrentLimit.ToString(),limit);
+            var limit=Style(30,Color.black,true);limit.alignment=TextAnchor.MiddleCenter;GUI.Label(new Rect(198,h-152,70,70),session.Mission.Highway?"∞":session.CurrentLimit.ToString(),limit);
             GUI.Label(new Rect(40,h-66,240,24),car.Indicator<0?"◀  LEFT INDICATOR":car.Indicator>0?"RIGHT INDICATOR  ▶":"INDICATORS OFF",small);
             GUI.Label(new Rect(330,h-87,w-650,54),"W / S  accelerate / brake     A / D  steer\nQ / E indicators   X reverse   C camera   R retry   Esc pause",small);
             MiniMap(new Rect(w-228,h-232,208,200));
@@ -40,6 +41,7 @@ namespace FahrCheck
         void MiniMap(Rect r)
         {
             Fill(r,Ink);GUI.Label(new Rect(r.x+12,r.y+8,185,23),"ROUTE / "+Mathf.CeilToInt(session.RemainingMetres)+" m",small);
+            if(session.Mission.Highway){float progress=Mathf.Clamp01(car.transform.position.z/2000f);for(int i=0;i<3;i++)Fill(new Rect(r.x+62+i*28,r.y+35,3,145),new Color(.33f,.39f,.43f));Circle(new Rect(r.x+116,r.y+174-progress*138,9,9),Accent);return;}
             Vector2 origin=new Vector2(r.center.x,r.yMax-14);float step=.39f;
             Fill(new Rect(origin.x-4,origin.y-145,8,145),new Color(.33f,.39f,.43f));
             foreach(float z in new[]{136f,190f,290f})Fill(new Rect(origin.x-31,origin.y-z*step-3,62,6),new Color(.33f,.39f,.43f));
@@ -54,16 +56,17 @@ namespace FahrCheck
             if(guide){Guide(x,y);return;}
             if(session.State==SessionState.Welcome)
             {
+                if(GUI.Button(new Rect(x+28,y+554,944,22),"Audi R8 2017 by artbyzia · CC BY 4.0 · adapted for FahrCheck — source & licence",GUI.skin.label))Application.OpenURL("https://sketchfab.com/3d-models/audi-r8-2017-3702de6c13cb4829afba67aaf2e92963");
                 GUI.Label(new Rect(x+28,y+22,700,44),"DRIVING ACADEMY",title);
                 GUI.Label(new Rect(x+28,y+63,920,28),"Four focused missions. One clear rule at a time.",small);
                 for(int i=0;i<MissionCatalog.All.Length;i++)
                 {
                     string done=PlayerPrefs.GetInt("FahrCheck.Academy.Completed."+i,0)==1?"  ✓":"";
-                    if(Button(new Rect(x+28,y+112+i*80,346,64),MissionCatalog.All[i].Name+done,session.MissionIndex==i))session.SelectMission(i);
+                    if(Button(new Rect(x+28,y+106+i*67,346,55),MissionCatalog.All[i].Name+done,session.MissionIndex==i))session.SelectMission(i);
                 }
                 GUI.Label(new Rect(x+410,y+110,548,50),session.Mission.Name,title);
                 GUI.Label(new Rect(x+410,y+174,548,86),session.Mission.Brief,body);
-                GUI.Label(new Rect(x+410,y+270,548,60),"Confirmed violations end the attempt and show a fine assessment. Collisions end the attempt for safety.",small);
+                GUI.Label(new Rect(x+410,y+270,548,60),"Traffic violations are recorded while you continue driving. The final assessment lists all offences and fines. Collisions still end the attempt for safety.",small);
                 if(session.Mission.Turn)
                 {
                     if(Button(new Rect(x+410,y+344,263,42),"LEFT turn",session.TurnDirection<0))session.SelectRoute(-1);

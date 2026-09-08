@@ -22,6 +22,9 @@ namespace FahrCheck
         public static FineAssessment Stop => new FineAssessment(10,0,"BKat 136.1");
         public static FineAssessment StopLine => new FineAssessment(10,0,"BKat 154",0,"Stop-line crossing only; not automatically a protected-area red-light offence.");
         public static FineAssessment LeftPriority => new FineAssessment(40,0,"BKat 39");
+        public static FineAssessment KeepRight => new FineAssessment(80,1,"BKat 4.2",0,"Scenario records persistent left/middle-lane use that obstructs traffic.");
+        public static FineAssessment HighwayDistance => new FineAssessment(35,0,"BKat 12.4",0,"Prototype applies this only above 80 km/h and uses a conservative gameplay threshold.");
+        public static FineAssessment HighwayIndicator => new FineAssessment(10,0,"BKat 29");
         public static FineAssessment Red(float seconds) => new FineAssessment(seconds>1?200:90,seconds>1?2:1,seconds>1?"BKat 132.3":"BKat 132",seconds>1?1:0);
     }
 }

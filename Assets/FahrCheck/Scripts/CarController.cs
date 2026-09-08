@@ -82,7 +82,8 @@ namespace FahrCheck
                 else torque = SpeedKmh < 12f ? -driveTorque * 0.55f : 0f;
             }
             if (throttle > 0f && SignedSpeed < -0.4f) Braking = true;
-            if (SpeedKmh > 85f && torque > 0f) torque = 0f;
+            float maximum=session!=null&&session.Mission.Highway?190f:85f;
+            if (SpeedKmh > maximum && torque > 0f) torque = 0f;
 
             for (int i = 0; i < wheels.Length; i++)
             {

@@ -6,10 +6,10 @@ Unity **2022.3.62f3**, Intel Editor, **Built-in Render Pipeline**. Original geom
 
 1. Open this project with Unity 2022.3.62f3.
 2. Choose **FahrCheck → Open Setup → Open and Play**, or open `Assets/FahrCheck/Scenes/Lindenallee.unity` and press Play.
-3. Select one of four missions: **First Drive**, **City Priority**, **Crossing & Stop**, or **City Exam**, then click **Start driving** (or press Enter). Focus the Game view for keyboard controls.
-4. City Exam offers **LEFT** and **RIGHT** destinations. Indicate before turning, yield when required, and enter the selected mint destination gate. Other lessons finish at their own gates. All four missions share Lindenallee; completion is saved for normal play.
+3. Select one of five missions, including the new **Autobahn** level, then click **Start driving** (or press Enter). Focus the Game view for keyboard controls.
+4. City Exam offers **LEFT** and **RIGHT** destinations. Autobahn is a separate 2 km, six-lane divided route with no posted maximum and a 130 km/h advisory speed.
 
-For standalone play, open **Builds/Mac/FahrCheck-Realism.app**. Older builds are retained; use the Realism app for the new assets.
+For standalone play, open **Builds/Mac/FahrCheck-R8.app**. Older builds are retained; use the R8 app for the new player car.
 
 | Controls | Action |
 | --- | --- |
@@ -24,7 +24,7 @@ For standalone play, open **Builds/Mac/FahrCheck-Realism.app**. Older builds are
 | F | Cycle clear / rain / fog (switches automatic weather off) |
 | R | Retry (also after success or failure) |
 
-Limits are 50 → 30 → 50 km/h. Slow before the signs. Red and red+yellow require stopping behind the line. A detected violation freezes the attempt, explains the reason and offers retry. A legal signal entry is never invalidated by a later signal change. Wrong-route/off-course outcomes are explicitly labelled mission boundaries.
+City limits are 50 → 30 → 50 km/h. Violations display while driving continues and produce a failed assessment with a list at the finish. A legal signal entry is never invalidated by a later signal change. Wrong-route/off-course outcomes are explicitly labelled mission boundaries.
 
 The final turn requires Q for left or E for right at least one second before turning; this is a disclosed course approximation of advance indication. See [implemented rules, sources and exceptions](Documentation/Rules.md), and the [fine model and sign reference](Documentation/German-rules-and-fines.md). Supported failures show illustrative German standard fines; collisions are safety failures without invented legal liability.
 
@@ -51,10 +51,10 @@ UNITY='/Applications/Unity/Hub/Editor/2022.3.62f3/Unity.app/Contents/MacOS/Unity
 "$UNITY" -batchmode -quit -projectPath "$PWD" -executeMethod FahrCheck.Editor.BuildVerification.BuildMac -logFile "$PWD/Logs/build-mac.log"
 ```
 
-The runtime suite intentionally has no `-quit`: it enters Play Mode, exercises actual WheelCollider physics, then exits with its result. It supplies automated controls through the same vehicle control path, and uses position injection for rule scenarios. It is not a substitute for a human driving the entire route. The build target is Intel x64 macOS with Mono scripting and a windowed player at `Builds/Mac/FahrCheck-Realism.app`. The development build can run the same suite with `-fahrcheckSmoke`. Automated checks disable human controls and exit on completion; omit that flag for normal play.
+The runtime suite intentionally has no `-quit`: it enters Play Mode, exercises actual WheelCollider physics, then exits with its result. It supplies automated controls through the same vehicle control path, and uses position injection for rule scenarios. It is not a substitute for a human driving the entire route. The build target is Intel x64 macOS with Mono scripting and a windowed player at `Builds/Mac/FahrCheck-R8.app`. The development build can run the same suite with `-fahrcheckSmoke`. Automated checks disable human controls and exit on completion; omit that flag for normal play.
 
 ```sh
-Builds/Mac/FahrCheck-Realism.app/Contents/MacOS/FahrCheck -batchmode -nographics -fahrcheckSmoke -logFile "$PWD/Logs/academy-player.log"
+Builds/Mac/FahrCheck-R8.app/Contents/MacOS/FahrCheck -batchmode -nographics -fahrcheckSmoke -logFile "$PWD/Logs/academy-player.log"
 ```
 
 The command above is a headless automated test, not normal play. Tests do not save mission progress. Normal play requires no command-line flags. The in-game guide contains 22 sign references and official catalogue links; only marked mission rules are enforced.
@@ -76,3 +76,5 @@ All paths above are relative to `Assets/FahrCheck/` unless otherwise stated.
 ## Realism asset upgrade
 
 The course now uses an imported coupe with separate animated wheels, a skinned humanoid with idle/walk clips, photographed road/pavement/brick materials, reusable European window modules, gutters and individual-leaf trees. [Asset sources, licences and limitations](Documentation/Asset-sources.md) document exactly what was acquired and adapted. All imports remain compatible with the Built-in pipeline.
+
+The player now uses the owner-supplied Audi R8 2017 by artbyzia (CC BY 4.0), with independently grouped wheels and an interior. Existing traffic keeps the lighter coupe. Attribution and adaptation details are in [Asset-sources.md](Documentation/Asset-sources.md).
